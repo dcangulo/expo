@@ -32,6 +32,7 @@
 - Fix lint. ([#23960](https://github.com/expo/expo/pull/23960) by [@EvanBacon](https://github.com/EvanBacon))
 - Enable static router tests. ([#23988](https://github.com/expo/expo/pull/23988) by [@EvanBacon](https://github.com/EvanBacon))
 - Reduce Metro bundles during `expo export` for Metro static web. ([#23987](https://github.com/expo/expo/pull/23987) by [@EvanBacon](https://github.com/EvanBacon))
+- Extend `Android` package name validation to disallow the `Java` ketword `native`.
 
 ## 0.11.1 — 2023-08-02
 
