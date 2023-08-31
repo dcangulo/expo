@@ -1,5 +1,6 @@
 import process from 'process';
 
+import * as EASCLI from './EASCLI';
 import * as ExpoCLI from './ExpoCLI';
 import * as Log from './Log';
 
@@ -9,15 +10,16 @@ type Options = {
     username: string;
     password: string;
   };
+  message: string;
 };
 
 /**
- * Uses the installed version of `expo-cli` to publish a project.
+ * Uses the installed version of `eas-cli` to publish a project.
  */
-export async function publishProjectWithExpoCliAsync(
+export async function publishProjectWithEasCliAsync(
   projectRoot: string,
-  options: Options = {}
-): Promise<void> {
+  options: Options
+): Promise<{ createdUpdateGroupId: string }> {
   process.env.EXPO_NO_DOCTOR = '1';
 
   if (options.accessToken) {
@@ -29,22 +31,20 @@ export async function publishProjectWithExpoCliAsync(
 
     if (username && password) {
       Log.collapsed('Logging in...');
-      // TODO: rework this to use EAS update instead of expo publish
-      await ExpoCLI.runLegacyExpoCliAsync('login', ['-u', username, '-p', password]);
+      await ExpoCLI.runExpoCliAsync('login', ['-u', username, '-p', password]);
     } else {
       Log.collapsed('Expo username and password not specified. Using currently logged-in account.');
     }
   }
 
   Log.collapsed('Publishing...');
-  const publishArgs: string[] = [];
-
-  if (process.env.CI) {
-    publishArgs.push('--max-workers', '1');
-  }
-
-  // TODO: rework this to use EAS update instead of expo publish
-  await ExpoCLI.runLegacyExpoCliAsync('publish', publishArgs, {
-    cwd: projectRoot,
-  });
+  const publishedUpdatesJSONString = await EASCLI.runEASCliAsync(
+    'update',
+    ['--non-interactive', '--json', '--branch', 'development', '--message', options.message],
+    {
+      cwd: projectRoot,
+    }
+  );
+  const publishedUpdates = JSON.parse(publishedUpdatesJSONString);
+  return { createdUpdateGroupId: publishedUpdates[0].group };
 }
